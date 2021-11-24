@@ -2,10 +2,10 @@ FROM alpine as helm
 ARG HELM_VER="v3.2.3"
 
 RUN apk add --no-cache curl && \
-    curl -L -o /tmp/helm-$HELM_VER.tgz https://get.helm.sh/helm-${HELM_VER}-linux-amd64.tar.gz && \
+    curl -L -o /tmp/helm-$HELM_VER.tgz https://get.helm.sh/helm-${HELM_VER}-linux-arm64.tar.gz && \
     tar -xz -C /tmp -f /tmp/helm-$HELM_VER.tgz && \
-    mv /tmp/linux-amd64/helm /usr/bin/helm && \
-    rm -rf /tmp/linux-amd64 /tmp/helm-$HELM_VER.tgz
+    mv /tmp/linux-arm64/helm /usr/bin/helm && \
+    rm -rf /tmp/linux-arm64 /tmp/helm-$HELM_VER.tgz
 
 FROM alpine as lychee
 ARG LYCHEE_VER="0.7.0"
@@ -13,7 +13,7 @@ RUN apk add --no-cache curl && \
     curl -L -o /tmp/lychee-$LYCHEE_VER.tgz https://github.com/lycheeverse/lychee/releases/download/${LYCHEE_VER}/lychee-${LYCHEE_VER}-x86_64-unknown-linux-gnu.tar.gz && \
     tar -xz -C /tmp -f /tmp/lychee-$LYCHEE_VER.tgz && \
     mv /tmp/lychee /usr/bin/lychee && \
-    rm -rf /tmp/linux-amd64 /tmp/lychee-$LYCHEE_VER.tgz
+    rm -rf /tmp/linux-arm64 /tmp/lychee-$LYCHEE_VER.tgz
 
 FROM alpine as golangci
 RUN apk add --no-cache curl && \
@@ -27,7 +27,7 @@ RUN apk add --no-cache docker-cli
 # however we need a commit which hasn't been released yet: https://github.com/drone/drone-cli/commit/1fad337d74ca0ecf420993d9d2d7229a1c99f054
 # Read the comment below regarding GO111MODULE=on and why it is necessary
 FROM golang:1.17.2 as drone
-RUN curl -L https://github.com/drone/drone-cli/releases/download/v1.4.0/drone_linux_amd64.tar.gz | tar zx && \
+RUN curl -L https://github.com/drone/drone-cli/releases/download/v1.4.0/drone_linux_arm64.tar.gz | tar zx && \
     install -t /usr/local/bin drone
 
 # Install faillint used to lint go imports in CI.
@@ -65,14 +65,15 @@ COPY --from=ghr /go/bin/ghr /usr/bin/ghr
 # If we don't force this, Go is going to default to GOPATH mode as we do not have an active project or go.mod
 # file for it to detect and switch to Go Modules automatically.
 # It's possible this can be revisited in newer versions of Go if the behavior around GOPATH vs GO111MODULES changes
+# installing newer version of delve to hopefully get it to compile correctly for arm
 RUN GO111MODULE=on go get \
-    github.com/golang/protobuf/protoc-gen-go@v1.3.1 \
-    github.com/gogo/protobuf/protoc-gen-gogoslick@v1.3.0 \
-    github.com/gogo/protobuf/gogoproto@v1.3.0 \
-    github.com/go-delve/delve/cmd/dlv@v1.3.2 \
+    github.com/golang/protobuf/protoc-gen-go \
+    github.com/gogo/protobuf/protoc-gen-gogoslick \
+    github.com/gogo/protobuf/gogoproto \
+    github.com/go-delve/delve/cmd/dlv \
     # Due to the lack of a proper release tag, we use the commit hash of
     # https://github.com/golang/tools/releases v0.1.7
-    golang.org/x/tools/cmd/goyacc@58d531046acdc757f177387bc1725bfa79895d69 \
+    golang.org/x/tools@v0.1.8-0.20211028023602-8de2a7fd1736 \
     github.com/mitchellh/gox && \
     rm -rf /go/pkg /go/src
 ENV GOCACHE=/go/cache

@@ -366,7 +366,7 @@ endif
 # optionally set the tag or the arch suffix (-arm64)
 LOKI_DOCKER_DRIVER ?= "grafana/loki-docker-driver"
 PLUGIN_TAG ?= $(IMAGE_TAG)
-PLUGIN_ARCH ?=
+PLUGIN_ARCH ?= -arm64
 
 docker-driver: docker-driver-clean
 	mkdir clients/cmd/docker-driver/rootfs

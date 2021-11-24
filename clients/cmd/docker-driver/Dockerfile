@@ -1,4 +1,5 @@
-ARG BUILD_IMAGE=grafana/loki-build-image:0.18.0
+# currently just running it from my local image build in the loki-build-imgae dir
+ARG BUILD_IMAGE=cubis/loki-build-image
 # Directories in this file are referenced from the root of the project not this folder
 # This file is intended to be called from the root like so:
 # docker build -t grafana/loki -f cmd/loki/Dockerfile .
